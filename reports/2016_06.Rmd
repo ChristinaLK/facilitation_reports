@@ -1,0 +1,218 @@
+---
+title: "Facilitation Report"
+author: "Christina"
+date: "June 2016"
+output: 
+  html_document
+---
+
+```{r setup, include=FALSE, cache=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(dplyr)
+library(knitr)
+library(ggplot2)
+library(tidyr)
+
+month <- '06'
+year <- 2016
+month_string <- "June"
+tickets <- 23
+```
+
+## Objectives
+
+* Help researchers use our center's resources for their research by guiding them through:
+    * Designing computational approaches for best overall throughput, productivity, and research innovation
+    * Submitting computational work to compute systems
+    * Monitoring, troubleshooting, and debugging
+    * Managing data in compute systems
+* See: [New Engagements] + [Ongoing Support]
+
+* Create a full set of online user guides and examples as an alternative/accompaniment to the user support described above, AND to replace the current, limited set of online materials.
+* Provide in-person learning opportunities, not just for using our computing resources, but in complement with other compute-related training on campus
+* See: [Learning Resources]
+
+* Establish connections and raise awareness of resources with other groups on campus
+* Work with other individuals and organizations on campus who facilitate research computing via infrastructure, education, administration, etc.
+* Work with other individuals and organizations on other campuses who facilitate research computing via infrastructure, education, etc.; share expertise, accomplish shared goals, create collaborations.
+* See: [Partnerships]
+
+## New Engagements
+
+```{r eng_data}
+# loading engagement data + counting new engagements
+eng_data_file <- paste0('../data/eng/',year,'_',month,'.csv')
+eng_data <- read.csv(eng_data_file,
+                       header = TRUE, 
+                       stringsAsFactors = FALSE)
+
+new_eng_num <- eng_data %>% 
+  filter(Type == 'initial') %>% 
+  summarize(total = sum(Number))
+
+oh_num <- eng_data %>%
+    filter(Type == 'office hours') %>%
+    distinct(Name) %>% summarize(total = sum(Number))
+
+ongoing_num <- eng_data %>%
+    filter(Type == 'ongoing') %>%
+    distinct(Name) %>% summarize(total = sum(Number))
+```
+
+In `r month_string` Facilitators had initial 
+meetings with `r new_eng_num[[1]]` researchers: 
+
+```{r engagements}
+eng_data %>%
+    filter(Type == 'initial') %>%
+    select(Name, Department) %>% 
+    group_by(Department) %>%
+    summarize(Names = paste(Name, collapse = ", ")) %>%
+    arrange(Department) %>%
+    select(Names, Department) %>%
+    kable()
+```
+
+### Highlights
+
+> Met with the first Computer Scientist!
+
+## Ongoing Support
+
+Over the past month, facilitators and other staff
+responded to `r tickets` new support requests.  
+
+### Office Hours
+
+There were `r oh_num[[1]]` researchers who attended office hours.  
+
+```{r office}
+eng_data %>%
+    filter(Type == 'office hours') %>%
+    distinct(Name) %>%
+    select(Name, Department) %>% 
+    arrange(Department) %>%
+    kable()
+```
+
+### Ongoing Engagements
+
+We had ongoing engagements with `r ongoing_num[[1]]` researchers.  
+
+```{r ongoing}
+eng_data %>%
+    filter(Type == 'ongoing') %>%
+    distinct(Name) %>%
+    select(Name, Department) %>% 
+    arrange(Department) %>%
+    kable()
+```
+
+### Highlights
+
+> Increased our Erdos number.  
+
+## Learning Resources
+
+### Training
+
+* Workshop on using git.  
+
+### Resources
+
+* New user guide on dos/unix incompatibility.
+
+## Partnerships
+
+### On Campus
+
+* Working with Dairy Science people on a grant.  
+
+### Off campus
+
+* Create report template to share.  
+* Coordinated with OSG [^1] team for OSG User School
+
+## Other Impacts
+
+* Any other campus impacts? 
+
+## Staff Development
+
+* Participated in diversity training. 
+
+## Usage
+
+```{r projects, include=FALSE}
+## CUSTOMIZE
+## Load monthly data, get total number of users, projects, and departments
+hrs_data_file <- paste0('../data/hrs/',year,'-',month,'_30_users.csv')
+hrs_data <- read.csv(hrs_data_file)
+
+chtc_users <- hrs_data %>%
+  filter(CHTC_Supported > 0) %>%
+  tally()
+
+chtc_projects <- hrs_data %>%
+  filter(CHTC_Supported > 0) %>%
+  distinct(Project) %>%
+  tally()
+
+chtc_depts <- hrs_data %>%
+  filter(CHTC_Supported > 0) %>%
+  distinct(Dept) %>%
+  tally()
+```
+
+In `r month_string`, CHTC resources supported 
+
+* `r chtc_users[[1]]` users
+* in `r chtc_projects[[1]]` unique projects
+* from `r chtc_depts[[1]]` departments.  
+
+```{r hours}
+## CUSTOMIZE
+## Read in weekly hours data and produce graphs/tables
+
+domain_data_file <- paste0('../data/hrs/',year,'-',month,'_weekly.csv')
+domain_hrs <- read.csv(domain_data_file)
+
+tidy_hrs <- domain_hrs %>% 
+  mutate(Domain = reorder(Domain, desc(CHTC_Supported))) %>%
+  mutate(Flocking = CHTC_Supported - CHTC_Total) %>%
+  select(-CHTC_Total, -Total, -CHTC_Supported) %>%
+  gather(Hour_type, Hours, -Domain, -Week) %>%
+  mutate(Hour_type = factor(Hour_type,
+                            c("HPC","OSG","HTC",
+                              "Flocking"))) 
+tidy_hrs %>% 
+  group_by(Week, Hour_type) %>%
+  summarize(Hours = sum(Hours)) %>%
+  ggplot(aes(x = Week, y = Hours, 
+             group = Hour_type, color = Hour_type)) +
+  geom_line(size = 1.2) + geom_point(size = 1.5) +
+  theme_minimal() + ggtitle(paste0("CHTC Supported Hours in ",month_string))
+
+domain_hrs %>% 
+  mutate(Domain = reorder(Domain, desc(CHTC_Supported))) %>%
+  mutate(Flocking = CHTC_Supported - CHTC_Total) %>%
+  select(Domain, HTC, HPC, OSG, Flocking, CHTC_Supported) %>%
+  group_by(Domain) %>%
+  summarize_each(funs(sum)) %>%
+  arrange(desc(CHTC_Supported)) %>% kable()
+
+
+tidy_hrs %>%
+  filter(Hour_type != 'CHTC_Total') %>%
+  ggplot(aes(x = Week, y = Hours, 
+             group = Hour_type, color = Hour_type)) +
+  geom_line(size = 1.2) + geom_point(size = 1.5) +
+  facet_wrap(~Domain) + 
+  theme_minimal() + theme(axis.title.x=element_blank(),
+                          axis.text.x=element_blank()) + 
+  ggtitle(paste0("CHTC Supported Hours in ",month_string," by Domain"))
+```
+
+## List of Partners
+
+[^1]: [Open Science Grid (OSG)](https://www.opensciencegrid.org/), national consortium of research organizations integrating high-throughput computing resources across the country (NSF-funded)
