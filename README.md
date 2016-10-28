@@ -1,4 +1,4 @@
-# CHTC Monthly Reports
+# Monthly Reports for Research Computing Facilitation
 
 ## Getting Started
 
