@@ -1,9 +1,9 @@
 ---
-title: "Research Computing Facilitation Report"
-author: "Names"
+title: "CHTC Facilitation Report"
+author: "Christina Koch, Lauren Michael"
 date: "Month Year"
 output: 
-  html_document: 
+  html_document
 ---
 
 ```{r setup, include=FALSE, cache=FALSE}
@@ -14,34 +14,35 @@ library(ggplot2)
 library(tidyr)
 
 month <- '00'
-year <- 2016
+year <- 2017
 month_string <- "Month"
-tickets <- 00
 ```
 
 ## Objectives
 
-* Help researchers use our center's resources for their research by guiding them through:
+* Help researchers use CHTC’s resources for their research by guiding them through:
     * Designing computational approaches for best overall throughput, productivity, and research innovation
-    * Submitting computational work to compute systems
+    * Submitting computational work to CHTC compute systems
     * Monitoring, troubleshooting, and debugging
-    * Managing data in compute systems
+    * Managing data in CHTC compute systems
 * See: [New Engagements] + [Ongoing Support]
 
-* Create a full set of online user guides and examples as an alternative/accompaniment to the user support described above, AND to replace the current, limited set of online materials.
-* Provide in-person learning opportunities, not just for using our computing resources, but in complement with other compute-related training on campus
+* Create a full set of online CHTC user guides and examples as an alternative/accompaniment to the user support described above, AND to replace the current, limited set of online materials.
+* Provide in-person learning opportunities, not just for using CHTC computing resources, but in complement with other compute-related training on campus
 * See: [Learning Resources]
 
-* Establish connections and raise awareness of resources with other groups on campus
+* Establish connections and raise awareness of CHTC resources with other groups on campus
 * Work with other individuals and organizations on campus who facilitate research computing via infrastructure, education, administration, etc.
 * Work with other individuals and organizations on other campuses who facilitate research computing via infrastructure, education, etc.; share expertise, accomplish shared goals, create collaborations.
 * See: [Partnerships]
 
-## New Engagements
+## Engagments
+
+### New Engagements
 
 ```{r eng_data}
 # loading engagement data + counting new engagements
-eng_data_file <- paste0('../data/eng/',year,'_',month,'.csv')
+eng_data_file <- paste0('../data/mtgs/data/',year,'_',month,'.csv')
 eng_data <- read.csv(eng_data_file,
                        header = TRUE, 
                        stringsAsFactors = FALSE)
@@ -59,7 +60,7 @@ ongoing_num <- eng_data %>%
     distinct(Name) %>% summarize(total = sum(Number))
 ```
 
-In `r month_string` Facilitators had initial 
+In `r month_string` CHTC Facilitators had initial 
 meetings with `r new_eng_num[[1]]` researchers: 
 
 ```{r engagements}
@@ -73,15 +74,6 @@ eng_data %>%
     kable()
 ```
 
-### Highlights
-
-> ADD HERE 
-
-## Ongoing Support
-
-Over the past month, facilitators and other staff
-responded to `r tickets` new support requests.  
-
 ### Office Hours
 
 There were `r oh_num[[1]]` researchers who attended office hours.  
@@ -89,9 +81,12 @@ There were `r oh_num[[1]]` researchers who attended office hours.
 ```{r office}
 eng_data %>%
     filter(Type == 'office hours') %>%
-    distinct(Name) %>%
     select(Name, Department) %>% 
+    distinct(Name) %>%
+    group_by(Department) %>%
+    summarize(Names = paste(Name, collapse = ", ")) %>%
     arrange(Department) %>%
+    select(Names, Department) %>%
     kable()
 ```
 
@@ -102,11 +97,27 @@ We had ongoing engagements with `r ongoing_num[[1]]` researchers.
 ```{r ongoing}
 eng_data %>%
     filter(Type == 'ongoing') %>%
-    distinct(Name) %>%
     select(Name, Department) %>% 
+    distinct(Name) %>%
+    group_by(Department) %>%
+    summarize(Names = paste(Name, collapse = ", ")) %>%
     arrange(Department) %>%
+    select(Names, Department) %>%
     kable()
 ```
+
+### Tickets
+
+```{r tickets}
+ticket_file <-  paste0('../data/tickets/data/tickets_',year,'-',month,'-01.csv')
+ticket_data <- read.csv(ticket_file,
+                       header = TRUE, 
+                       stringsAsFactors = FALSE)
+ticket_data <- ticket_data %>% filter(Owner == 'all')
+```
+
+Over the past month, CHTC facilitators and other staff
+responded to `r ticket_data$Created` new support requests.  
 
 ### Highlights
 
@@ -118,7 +129,7 @@ eng_data %>%
 
 * Information here
 
-### Resources
+### User Guides
 
 * Information here
 
@@ -126,11 +137,18 @@ eng_data %>%
 
 ### On Campus
 
-* Report stuff
+* **Report stuff**
+* Ongoing: 
+    * 
 
 ### Off campus
 
-* Report stuff
+* **Report stuff**
+* Ongoing: 
+    * Lauren is leading and both Christina and Lauren are participating in bi-weekly calls for ACI-REF[^6].  
+    * Lauren is contributing to CaRC[^9] as an ACI-REF representative. 
+    * Christina is continuing conversations with other interested researchers and staff members who would like to develop a Software Carpentry-like lesson for using large-scale compute systems.  
+    * Christina continues to contribute to the Software[^2]/Data[^3] Carpentry organizations as an instructor trainer.  
 
 ## Other Impacts
 
@@ -138,18 +156,17 @@ eng_data %>%
 
 ## Staff Development
 
-* Information here
+* Anything?
 
 ## Usage
 
 ```{r projects, include=FALSE}
-## CUSTOMIZE
-## Load monthly data, get total number of users, projects, and departments
-hrs_data_file <- paste0('../data/hrs/',year,'-',month,'_30_users.csv')
+hrs_data_file <- paste0('../data/hrs/data/clean/',year,'-',month,'_30_users.csv')
 hrs_data <- read.csv(hrs_data_file)
 
 chtc_users <- hrs_data %>%
   filter(CHTC_Supported > 0) %>%
+  distinct(User) %>%
   tally()
 
 chtc_projects <- hrs_data %>%
@@ -169,11 +186,21 @@ In `r month_string`, CHTC resources supported
 * in `r chtc_projects[[1]]` unique projects
 * from `r chtc_depts[[1]]` departments.  
 
-```{r hours}
-## CUSTOMIZE
-## Read in weekly hours data and produce graphs/tables
+```{r top-users, include=FALSE}
+print("Our top users were:")
+hrs_data %>%
+  filter(Project != 'icecube' & 
+           Project != 'cms' & 
+           Project != 'bmrb' & 
+           Project != 'other' ) %>%
+  select(User, Dept, CHTC_Supported) %>%
+  arrange(-CHTC_Supported) %>%
+  head() %>%
+  kable()
+```
 
-domain_data_file <- paste0('../data/hrs/',year,'-',month,'_weekly.csv')
+```{r hours}
+domain_data_file <- paste0('../data/hrs/data/clean/',year,'-',month,'_weekly.csv')
 domain_hrs <- read.csv(domain_data_file)
 
 tidy_hrs <- domain_hrs %>% 
@@ -215,3 +242,13 @@ tidy_hrs %>%
 ## List of Partners
 
 [^1]: [Open Science Grid (OSG)](https://www.opensciencegrid.org/), national consortium of research organizations integrating high-throughput computing resources across the country (NSF-funded)
+[^2]: [Software Carpentry](http://software-carpentry.org/), international non-profit organization providing computational instruction for researchers
+[^3]: [Data Carpentry](http://www.datacarpentry.org/), international non-profit organization providing data management instruction for researchers
+[^4]: [Morgridge Institute for Research (MIR)](https://morgridge.org/), private non-profit research institute
+[^5]: [Wisconsin Institute for Discovery (WID)](http://wid.wisc.edu/), transdisciplinary campus research institute
+[^6]: [Advanced Cyberinfrastructure Research and Education 
+Facilitators (ACI-REF)](https://aciref.org/), national collaboration investigating the role of facilitation (NSF-funded)
+[^7]: [HTCondor Project](http://research.cs.wisc.edu/htcondor/), project to develop the HTCondor software
+[^8]: [Advanced Computing Initiative](http://aci.wisc.edu), task force reponsible for advising campus on research computing needs and direction
+[^9]: Campus Research Computing (CaRC) Infrastructures Consortium, NSF research coordination network (RCN) project, creating a consortium of profesional communities around research computing on campuses
+[^10]: [Campus Computing Infrastructure (CCI)](https://cci.wisc.edu/), group at UW Madison brokering computing and data services.  
