@@ -37,11 +37,13 @@ tickets <- 23
 * Work with other individuals and organizations on other campuses who facilitate research computing via infrastructure, education, etc.; share expertise, accomplish shared goals, create collaborations.
 * See: [Partnerships]
 
-## New Engagements
+## Engagments
+
+### New Engagements
 
 ```{r eng_data}
 # loading engagement data + counting new engagements
-eng_data_file <- paste0('../data/eng/',year,'_',month,'.csv')
+eng_data_file <- paste0('../data/mtgs/data/',year,'_',month,'.csv')
 eng_data <- read.csv(eng_data_file,
                        header = TRUE, 
                        stringsAsFactors = FALSE)
@@ -59,7 +61,7 @@ ongoing_num <- eng_data %>%
     distinct(Name) %>% summarize(total = sum(Number))
 ```
 
-In `r month_string` Facilitators had initial 
+In `r month_string` CHTC Facilitators had initial 
 meetings with `r new_eng_num[[1]]` researchers: 
 
 ```{r engagements}
@@ -73,15 +75,6 @@ eng_data %>%
     kable()
 ```
 
-### Highlights
-
-> Met with the first Computer Scientist!
-
-## Ongoing Support
-
-Over the past month, facilitators and other staff
-responded to `r tickets` new support requests.  
-
 ### Office Hours
 
 There were `r oh_num[[1]]` researchers who attended office hours.  
@@ -89,9 +82,12 @@ There were `r oh_num[[1]]` researchers who attended office hours.
 ```{r office}
 eng_data %>%
     filter(Type == 'office hours') %>%
-    distinct(Name) %>%
     select(Name, Department) %>% 
+    distinct(Name) %>%
+    group_by(Department) %>%
+    summarize(Names = paste(Name, collapse = ", ")) %>%
     arrange(Department) %>%
+    select(Names, Department) %>%
     kable()
 ```
 
@@ -102,15 +98,33 @@ We had ongoing engagements with `r ongoing_num[[1]]` researchers.
 ```{r ongoing}
 eng_data %>%
     filter(Type == 'ongoing') %>%
-    distinct(Name) %>%
     select(Name, Department) %>% 
+    distinct(Name) %>%
+    group_by(Department) %>%
+    summarize(Names = paste(Name, collapse = ", ")) %>%
     arrange(Department) %>%
+    select(Names, Department) %>%
     kable()
 ```
+
+### Tickets
+
+```{r tickets}
+ticket_file <-  paste0('../data/tickets/data/tickets_',year,'-',month,'-01.csv')
+ticket_data <- read.csv(ticket_file,
+                       header = TRUE, 
+                       stringsAsFactors = FALSE)
+ticket_data <- ticket_data %>% filter(Owner == 'all')
+```
+
+Over the past month, CHTC facilitators and other staff
+responded to `r ticket_data$Created` new support requests.  
 
 ### Highlights
 
 > Increased our Erdos number.  
+
+> Met with the first Computer Scientist!
 
 ## Learning Resources
 
@@ -146,11 +160,13 @@ eng_data %>%
 ```{r projects, include=FALSE}
 ## CUSTOMIZE
 ## Load monthly data, get total number of users, projects, and departments
-hrs_data_file <- paste0('../data/hrs/',year,'-',month,'_30_users.csv')
+
+hrs_data_file <- paste0('../data/hrs/data/clean/',year,'-',month,'_30_users.csv')
 hrs_data <- read.csv(hrs_data_file)
 
 chtc_users <- hrs_data %>%
   filter(CHTC_Supported > 0) %>%
+  distinct(User) %>%
   tally()
 
 chtc_projects <- hrs_data %>%
@@ -174,7 +190,7 @@ In `r month_string`, CHTC resources supported
 ## CUSTOMIZE
 ## Read in weekly hours data and produce graphs/tables
 
-domain_data_file <- paste0('../data/hrs/',year,'-',month,'_weekly.csv')
+domain_data_file <- paste0('../data/hrs/data/clean/',year,'-',month,'_weekly.csv')
 domain_hrs <- read.csv(domain_data_file)
 
 tidy_hrs <- domain_hrs %>% 
@@ -200,17 +216,6 @@ domain_hrs %>%
   group_by(Domain) %>%
   summarize_each(funs(sum)) %>%
   arrange(desc(CHTC_Supported)) %>% kable()
-
-
-tidy_hrs %>%
-  filter(Hour_type != 'CHTC_Total') %>%
-  ggplot(aes(x = Week, y = Hours, 
-             group = Hour_type, color = Hour_type)) +
-  geom_line(size = 1.2) + geom_point(size = 1.5) +
-  facet_wrap(~Domain) + 
-  theme_minimal() + theme(axis.title.x=element_blank(),
-                          axis.text.x=element_blank()) + 
-  ggtitle(paste0("CHTC Supported Hours in ",month_string," by Domain"))
 ```
 
 ## List of Partners
