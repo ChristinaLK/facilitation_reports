@@ -110,7 +110,7 @@ eng_data %>%
 ### Tickets
 
 ```{r tickets}
-ticket_file <-  paste0('../data/tickets/data/tickets_',year,'-',month,'-01.csv')
+ticket_file <- paste0('../data/tickets/data/tickets_',year,'-',month,'-01.csv')
 ticket_data <- read.csv(ticket_file,
                        header = TRUE, 
                        stringsAsFactors = FALSE)
@@ -156,35 +156,6 @@ responded to `r ticket_data$Created` new support requests.
 * Participated in diversity training. 
 
 ## Usage
-
-```{r projects, include=FALSE}
-## CUSTOMIZE
-## Load monthly data, get total number of users, projects, and departments
-
-hrs_data_file <- paste0('../data/hrs/data/clean/',year,'-',month,'_30_users.csv')
-hrs_data <- read.csv(hrs_data_file)
-
-chtc_users <- hrs_data %>%
-  filter(CHTC_Supported > 0) %>%
-  distinct(User) %>%
-  tally()
-
-chtc_projects <- hrs_data %>%
-  filter(CHTC_Supported > 0) %>%
-  distinct(Project) %>%
-  tally()
-
-chtc_depts <- hrs_data %>%
-  filter(CHTC_Supported > 0) %>%
-  distinct(Dept) %>%
-  tally()
-```
-
-In `r month_string`, CHTC resources supported 
-
-* `r chtc_users[[1]]` users
-* in `r chtc_projects[[1]]` unique projects
-* from `r chtc_depts[[1]]` departments.  
 
 ```{r hours}
 ## CUSTOMIZE
