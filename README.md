@@ -16,27 +16,25 @@ repository ("Create project from existing directory").
 ## Data Preparation
 
 * Create a spreadsheet with a list of engagements, saved in the 
-`data/eng` directory, with the format `year_month.csv`. See the 
-`2016_06` file for an example 
-
-> Christina enters engagements into a Google form to generate 
-these spreadsheets.  
+`data/mtgs/data` directory, with the format `year_month.csv`. See the 
+`2016_06.csv` file for an example 
 
 * Create a spreadsheet with relevant usage hours data and save it 
-to the `data/hrs` directory.  The current setup is for a summary
-by domain by week and overall usage per month (see the `data/hrs` 
-directory for samples).  Depending on your 
+to the `data/hrs/data` directory.  The current setup is for a summary
+by domain by week. Depending on your 
 system, you may have different accounting and may need to 
 customize the usage code at the end of the report. 
 
+* Create a ticket spreadsheet with the relevant ticket data in the 
+`data/tickets/data` directory.  There is an example in the directory.  
+
 ## Generate Report
 
-* Copy the `template.Rmd` file in the `reports` directory.  
-* Change the values in the first R chunk to the appropriate year and day. 
-* Use you ticket system to find out how many new tickets were created in the month and 
-fill in the first R chunk.  
+* Copy the `template.Rmd` file in the `reports` directory to a new file, named 
+after the year/month of the report. 
+* Change the values in the first R chunk to the appropriate year and month. 
 * Add user highlights
-* Fill out the second half of the report.  
+* Fill out the second half of the report (Training, On- and Off- Campus partnerships)
 * Use knitr (yarn button from RStudio interface) to generate report.  
 
 See the `2016_06.Rmd` file for an example of a "completed" report, and `2016_06.html` for the rendered report.  
